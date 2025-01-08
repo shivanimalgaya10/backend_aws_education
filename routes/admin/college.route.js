@@ -5,11 +5,11 @@ import upload1 from '../../utils/multer1.js';
 const router = express.Router();
 
 // Route to add a new college
-router.route("/addcollege").post(upload1.array('images', 5), addCollege);
-router.route("/updatecollege/:id").put(upload1.array('images', 15), updateCollege);
+router.route("/addcollege").post(isAuthenticated, adminAuth,upload1.array('images', 5), addCollege);
+router.route("/updatecollege/:id").put(isAuthenticated, adminAuth,upload1.array('images', 15), updateCollege);
 
-router.get("/getCollegesByCountryAndCategory", getCollegesByCountryAndCategory);
-router.route("/deletecollege/:id").delete(deleteCollege);
+router.get("/getCollegesByCountryAndCategory", isAuthenticated, adminAuth,getCollegesByCountryAndCategory);
+router.route("/deletecollege/:id").delete(isAuthenticated, adminAuth,deleteCollege);
 // Route to get a specific college by ID
 router.route("/getcollege/:id").get(getCollegeById);
 

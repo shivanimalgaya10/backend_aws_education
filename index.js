@@ -17,25 +17,26 @@ dotenv.config({})
 const app =express();
 const PORT=process.env.PORT || 8000
 
-app.get("/",(_,res)=>{
-    return res.status(200).json({
-        message:'I am coming  from backend',
-        success:true
-    })
-})
+
 
 //middlewares
 app.use(express.json())
 app.use(cookieParser())
 app.use(urlencoded({extended:true}))
 const corsOptions={
-    origin: ['http://localhost:5173', 'http://localhost:5174'], // The frontend origin
+    origin: ['https://education.blackgrapesgroup.com','https://admin.blackgrapesgroup.com/addcol'], // The frontend origin
     credentials:true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'], // Specify allowed headers
 
 }
 app.use(cors(corsOptions))
+app.get("/",(_,res)=>{
+  return res.status(200).json({
+      message:'I am coming  from backend',
+      success:true
+  })
+})
 
 //yha pr apni api aayengi
 app.use("/api/v1/user",userRoute)
