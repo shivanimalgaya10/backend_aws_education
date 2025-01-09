@@ -1,6 +1,9 @@
 import express from 'express';
 import { addCollege, deleteCollege, getCollegeById, getCollegesByCountryAndCategory, updateCollege } from '../../controllers/admin/college.controller.js';
 import upload1 from '../../utils/multer1.js';
+import isAuthenticated from '../../middlewares/isAuthenticated.js';
+import adminAuth from '../../middlewares/adminAuth.js';
+
 
 const router = express.Router();
 
