@@ -14,6 +14,4 @@ router.route("/deletecollege/:id").delete(isAuthenticated, adminAuth,deleteColle
 router.route("/getcollege/:id").get(getCollegeById);
 
 
-
-
 export default router;
