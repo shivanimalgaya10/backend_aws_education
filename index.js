@@ -24,7 +24,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(urlencoded({extended:true}))
 const corsOptions={
-    origin: ['https://education.blackgrapesgroup.com','https://admin.blackgrapesgroup.com/addcol'], // The frontend origin
+    origin: ['https://education.blackgrapesgroup.com','https://admin.blackgrapesgroup.com'], // The frontend origin
     credentials:true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'], // Specify allowed headers
