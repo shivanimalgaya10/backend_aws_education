@@ -11,7 +11,7 @@ const router = express.Router();
 router.route("/addcollege").post(isAuthenticated, adminAuth,upload1.array('images', 5), addCollege);
 router.route("/updatecollege/:id").put(isAuthenticated, adminAuth,upload1.array('images', 15), updateCollege);
 
-router.get("/getCollegesByCountryAndCategory", isAuthenticated, adminAuth,getCollegesByCountryAndCategory);
+router.get("/getCollegesByCountryAndCategory",getCollegesByCountryAndCategory);
 router.route("/deletecollege/:id").delete(isAuthenticated, adminAuth,deleteCollege);
 // Route to get a specific college by ID
 router.route("/getcollege/:id").get(getCollegeById);
