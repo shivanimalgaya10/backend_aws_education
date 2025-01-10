@@ -20,9 +20,7 @@ export const addCollege = async (req, res) => {
       details,
     } = req.body;
 
-    console.log("images", req.files);
-    console.log("ugCourses before parsing:", ugCourses);
-console.log("pgCourses before parsing:", pgCourses);
+    console.log("images", req.files)
 
     // Parse and validate courses
     let ugCourses = req.body.ugCourses;
