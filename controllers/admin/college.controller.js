@@ -5,9 +5,9 @@ import dotenv from 'dotenv';
 dotenv.config(); // Load environment variables
 
 export const addCollege = async (req, res) => {
-  console.log('Request Body: shivani ', req.body);
+  console.log('Request Body: shivani', req.body);
   try {
-    const {
+    let {
       name,
       institutionType,
       remarks,
