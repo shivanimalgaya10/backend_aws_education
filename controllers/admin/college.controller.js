@@ -7,9 +7,7 @@ dotenv.config(); // Load environment variables
 export const addCollege = async (req, res) => {
   console.log('Request Body: shivani ', req.body);
 
-  // Parse and validate courses
-  const ugCourses = req.body.ugCourses ? JSON.parse(req.body.ugCourses) : [];
-  const pgCourses = req.body.pgCourses ? JSON.parse(req.body.pgCourses) : [];
+ 
   try {
     const {
       name,
@@ -21,12 +19,22 @@ export const addCollege = async (req, res) => {
       city,
       country,
       category,
-      ugCourses,  // Array of UG courses
-     pgCourses,  // Array of PG courses
       details,
     } = req.body;
 
     console.log("images",req.files);
+     // Parse and validate courses
+      // Parse and validate courses
+      const ugCourses = Array.isArray(req.body.ugCourses)
+      ? req.body.ugCourses
+      : JSON.parse(req.body.ugCourses || '[]');
+    const pgCourses = Array.isArray(req.body.pgCourses)
+      ? req.body.pgCourses
+      : JSON.parse(req.body.pgCourses || '[]');
+
+      if (!Array.isArray(ugCourses) || !Array.isArray(pgCourses)) {
+        return res.status(400).json({ message: 'Invalid course data format' });
+      }
 
      
 
@@ -45,9 +53,7 @@ export const addCollege = async (req, res) => {
         public_id: uploadResponse.public_id,
       };
     });
-    if (!Array.isArray(ugCourses) || !Array.isArray(pgCourses)) {
-      return res.status(400).json({ message: 'Invalid course data format' });
-    }
+
 
 
     const uploadedImages = await Promise.all(imagePromises);

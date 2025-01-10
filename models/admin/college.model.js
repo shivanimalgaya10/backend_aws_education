@@ -18,8 +18,8 @@ const collegeSchema = new mongoose.Schema({
   city: { type: String, required: true },
   country: { type: String, required: true },
   category: { type: String, enum: categoryOptions, required: true },
-  ugCourses: [courseSchema], // Separate UG courses
-  pgCourses: [courseSchema], // Separate PG courses
+  ugCourses: { type: [courseSchema], default: [] },
+pgCourses: { type: [courseSchema], default: [] },
   details: { type: String, required: true },
   images: [{
     url: { type: String},  // URL of the image in Cloudinary
