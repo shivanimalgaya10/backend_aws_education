@@ -17,14 +17,14 @@ export const addCollege = async (req, res) => {
       city,
       country,
       category,
+      ugCourses,
+      pgCourses,
       details,
     } = req.body;
 
     console.log("images", req.files)
 
-    // Parse and validate courses
-    let ugCourses = req.body.ugCourses;
-    let pgCourses = req.body.pgCourses;
+   
 
  // If courses are passed as JSON strings, parse them
 if (typeof ugCourses === 'string') {
