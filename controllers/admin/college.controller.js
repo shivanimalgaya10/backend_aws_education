@@ -20,11 +20,15 @@ dotenv.config(); // Load environment variables
         country,
         category,
         ugCourses,  // Array of UG courses
-      pgCourses,  // Array of PG courses
+       pgCourses,  // Array of PG courses
         details,
       } = req.body;
 
       console.log("images",req.files);
+
+       // Ensure courses are parsed correctly
+    const parsedUgCourses = JSON.parse(ugCourses || '[]');
+    const parsedPgCourses = JSON.parse(pgCourses || '[]');
       
   
       // Check if images are provided
@@ -47,12 +51,12 @@ dotenv.config(); // Load environment variables
       const uploadedImages = await Promise.all(imagePromises);
   
      // Ensure fees are numbers in each course
-     const updatedUgCourses =  Array.isArray(ugCourses) ? ugCourses.map(course => ({
+     const updatedUgCourses =  Array.isArray(parsedUgCourses) ? parsedUgCourses.map(course => ({
       ...course,
       fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
     })) : []; // Return an empty array if ugCourses is not an array
 
-    const updatedPgCourses =  Array.isArray(pgCourses) ? pgCourses.map(course => ({
+    const updatedPgCourses =  Array.isArray(parsedPgCourses) ? parsedPgCourses.map(course => ({
   ...course,
   fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
 })) : []; // Return an empty array if ugCourses is not an array
