@@ -4,93 +4,185 @@ import dotenv from 'dotenv';
 
 dotenv.config(); // Load environment variables
 
+export const addCollege = async (req, res) => {
+  console.log('Request Body:', req.body);
+  try {
+    const {
+      name,
+      institutionType, 
+      remarks,
+      address,
+      pincode,
+      state,
+      city,
+      country,
+      category,
+      ugCourses,  // Array of UG courses
+     pgCourses,  // Array of PG courses
+      details,
+    } = req.body;
+
+    console.log("images",req.files);
+
+     // Parse courses
+     let parsedUgCourses = [];
+     let parsedPgCourses = [];
+     try {
+       parsedUgCourses = JSON.parse(ugCourses || '[]');
+       parsedPgCourses = JSON.parse(pgCourses || '[]');
+     } catch (error) {
+       console.error('Error parsing courses:', error);
+       return res.status(400).json({ error: 'Invalid course data' });
+     }
+
+    // Check if images are provided
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No images provided' });
+    }
+
+    // Upload images to Cloudinary using file.buffer
+    const imagePromises = req.files.map(async (file) => {
+      const uploadResponse = await cloudinary.uploader.upload(file.path, {
+        folder: 'colleges',
+      });
+      return {
+        url: uploadResponse.secure_url,
+        public_id: uploadResponse.public_id,
+      };
+    });
 
 
-  export const addCollege = async (req, res) => {
-    console.log('Request Body:', req.body);
-    try {
-      const {
-        name,
-        institutionType, 
-        remarks,
-        address,
-        pincode,
-        state,
-        city,
-        country,
-        category,
-        ugCourses,  // Array of UG courses
-       pgCourses,  // Array of PG courses
-        details,
-      } = req.body;
+    const uploadedImages = await Promise.all(imagePromises);
+ // Validate courses
+ const updatedUgCourses = Array.isArray(parsedUgCourses)
+ ? parsedUgCourses.map((course) => ({
+     ...course,
+     fees: parseFloat(course.fees || 0),
+   }))
+ : [];
+const updatedPgCourses = Array.isArray(parsedPgCourses)
+ ? parsedPgCourses.map((course) => ({
+     ...course,
+     fees: parseFloat(course.fees || 0),
+   }))
+ : [];
 
-      console.log("images",req.files);
+    // Create a new College instance
+    const newCollege = new College({
+      name,
+      institutionType,
+      remarks,
+      address,
+      pincode,
+      state,
+      city,
+      country,
+      category,
+       ugCourses: updatedUgCourses,  // Assign UG courses separately
+     pgCourses: updatedPgCourses,  // Assign PG courses separately
+      details,
+      images: uploadedImages, // Store image URLs and public IDs in the database
+      // Store image URLs and public IDs in the database
+    });
+    // images: uploadedImages,
 
-       // Ensure courses are parsed correctly
-    const parsedUgCourses = JSON.parse(ugCourses || '[]');
-    const parsedPgCourses = JSON.parse(pgCourses || '[]');
+    console.log('New College:', newCollege);
+
+    // Save the college to the database
+    await newCollege.save();
+
+    res.status(201).json({ message: 'College added successfully', college: newCollege });
+  } catch (error) {
+    console.error('Error adding college:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+//   export const addCollege = async (req, res) => {
+//     console.log('Request Body:', req.body);
+//     try {
+//       const {
+//         name,
+//         institutionType, 
+//         remarks,
+//         address,
+//         pincode,
+//         state,
+//         city,
+//         country,
+//         category,
+//         ugCourses,  // Array of UG courses
+//        pgCourses,  // Array of PG courses
+//         details,
+//       } = req.body;
+
+//       console.log("images",req.files);
+
+//        // Ensure courses are parsed correctly
+//     const parsedUgCourses = JSON.parse(ugCourses || '[]');
+//     const parsedPgCourses = JSON.parse(pgCourses || '[]');
       
   
-      // Check if images are provided
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: 'No images provided' });
-      }
+//       // Check if images are provided
+//       if (!req.files || req.files.length === 0) {
+//         return res.status(400).json({ error: 'No images provided' });
+//       }
   
-      // Upload images to Cloudinary using file.buffer
-      const imagePromises = req.files.map(async (file) => {
-        const uploadResponse = await cloudinary.uploader.upload(file.path, {
-          folder: 'colleges',
-        });
-        return {
-          url: uploadResponse.secure_url,
-          public_id: uploadResponse.public_id,
-        };
-      });
+//       // Upload images to Cloudinary using file.buffer
+//       const imagePromises = req.files.map(async (file) => {
+//         const uploadResponse = await cloudinary.uploader.upload(file.path, {
+//           folder: 'colleges',
+//         });
+//         return {
+//           url: uploadResponse.secure_url,
+//           public_id: uploadResponse.public_id,
+//         };
+//       });
   
   
-      const uploadedImages = await Promise.all(imagePromises);
+//       const uploadedImages = await Promise.all(imagePromises);
   
-     // Ensure fees are numbers in each course
-     const updatedUgCourses =  Array.isArray(parsedUgCourses) ? parsedUgCourses.map(course => ({
-      ...course,
-      fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
-    })) : []; // Return an empty array if ugCourses is not an array
+//      // Ensure fees are numbers in each course
+//      const updatedUgCourses =  Array.isArray(parsedUgCourses) ? parsedUgCourses.map(course => ({
+//       ...course,
+//       fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
+//     })) : []; // Return an empty array if ugCourses is not an array
 
-    const updatedPgCourses =  Array.isArray(parsedPgCourses) ? parsedPgCourses.map(course => ({
-  ...course,
-  fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
-})) : []; // Return an empty array if ugCourses is not an array
+//     const updatedPgCourses =  Array.isArray(parsedPgCourses) ? parsedPgCourses.map(course => ({
+//   ...course,
+//   fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
+// })) : []; // Return an empty array if ugCourses is not an array
   
-      // Create a new College instance
-      const newCollege = new College({
-        name,
-        institutionType,
-        remarks,
-        address,
-        pincode,
-        state,
-        city,
-        country,
-        category,
-         ugCourses: updatedUgCourses,  // Assign UG courses separately
-       pgCourses: updatedPgCourses,  // Assign PG courses separately
-        details,
-        images: uploadedImages, // Store image URLs and public IDs in the database
-        // Store image URLs and public IDs in the database
-      });
-      // images: uploadedImages,
+//       // Create a new College instance
+//       const newCollege = new College({
+//         name,
+//         institutionType,
+//         remarks,
+//         address,
+//         pincode,
+//         state,
+//         city,
+//         country,
+//         category,
+//          ugCourses: updatedUgCourses,  // Assign UG courses separately
+//        pgCourses: updatedPgCourses,  // Assign PG courses separately
+//         details,
+//         images: uploadedImages, // Store image URLs and public IDs in the database
+//         // Store image URLs and public IDs in the database
+//       });
+//       // images: uploadedImages,
   
-      console.log('New College:', newCollege);
+//       console.log('New College:', newCollege);
   
-      // Save the college to the database
-      await newCollege.save();
+//       // Save the college to the database
+//       await newCollege.save();
   
-      res.status(201).json({ message: 'College added successfully', college: newCollege });
-    } catch (error) {
-      console.error('Error adding college:', error);
-      res.status(500).json({ error: error.message });
-    }
-  };
+//       res.status(201).json({ message: 'College added successfully', college: newCollege });
+//     } catch (error) {
+//       console.error('Error adding college:', error);
+//       res.status(500).json({ error: error.message });
+//     }
+//   };
 
 
 // Controller function to get colleges by country and category
