@@ -14,8 +14,6 @@ const connectDB = async () => {
 
         // Connect to MongoDB using the connection string from the .env file
         await mongoose.connect(process.env.MONGO_DB_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
             serverSelectionTimeoutMS: 5000,  // Timeout after 5 seconds
         });
 
