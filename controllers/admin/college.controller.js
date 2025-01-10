@@ -6,12 +6,10 @@ dotenv.config(); // Load environment variables
 
 export const addCollege = async (req, res) => {
   console.log('Request Body: shivani ', req.body);
-
- 
   try {
     const {
       name,
-      institutionType, 
+      institutionType,
       remarks,
       address,
       pincode,
@@ -22,24 +20,39 @@ export const addCollege = async (req, res) => {
       details,
     } = req.body;
 
-    console.log("images",req.files);
-  
-       // Parse and validate courses
-       let ugCourses = req.body.ugCourses;
-       let pgCourses = req.body.pgCourses;
-   
-       // If courses are passed as JSON strings, parse them
-       if (typeof ugCourses === 'string') {
-         ugCourses = JSON.parse(ugCourses);
-       }
-       if (typeof pgCourses === 'string') {
-         pgCourses = JSON.parse(pgCourses);
-       }
+    console.log("images", req.files);
+    console.log("ugCourses before parsing:", ugCourses);
+console.log("pgCourses before parsing:", pgCourses);
 
-           // Validate course data format
+    // Parse and validate courses
+    let ugCourses = req.body.ugCourses;
+    let pgCourses = req.body.pgCourses;
+
+ // If courses are passed as JSON strings, parse them
+if (typeof ugCourses === 'string') {
+  try {
+    ugCourses = JSON.parse(ugCourses);
+  } catch (error) {
+    return res.status(400).json({ message: 'Invalid UG courses JSON format' });
+  }
+}
+
+if (typeof pgCourses === 'string') {
+  try {
+    pgCourses = JSON.parse(pgCourses);
+  } catch (error) {
+    return res.status(400).json({ message: 'Invalid PG courses JSON format' });
+  }
+}
+
+    console.log("ug pg ", ugCourses)
+    console.log("ugCourses after parsing:", ugCourses);
+console.log("pgCourses after parsing:", pgCourses);
+
+    // Validate course data format
     const validateCourses = (courses) => {
       return Array.isArray(courses) && courses.every(course =>
-        typeof course.course === 'string' && !isNaN(course.fees)
+        typeof course.course === 'string' && !isNaN(Number(course.fees)) && Number(course.fees) >= 0
       );
     };
 
@@ -47,7 +60,6 @@ export const addCollege = async (req, res) => {
       return res.status(400).json({ message: 'Invalid course data format' });
     }
 
-     
 
     // Check if images are provided
     if (!req.files || req.files.length === 0) {
@@ -68,7 +80,7 @@ export const addCollege = async (req, res) => {
 
 
     const uploadedImages = await Promise.all(imagePromises);
- 
+
 
     // Create a new College instance
     const newCollege = new College({
@@ -130,13 +142,13 @@ export const addCollege = async (req, res) => {
 //        // Ensure courses are parsed correctly
 //     const parsedUgCourses = JSON.parse(ugCourses || '[]');
 //     const parsedPgCourses = JSON.parse(pgCourses || '[]');
-      
-  
+
+
 //       // Check if images are provided
 //       if (!req.files || req.files.length === 0) {
 //         return res.status(400).json({ error: 'No images provided' });
 //       }
-  
+
 //       // Upload images to Cloudinary using file.buffer
 //       const imagePromises = req.files.map(async (file) => {
 //         const uploadResponse = await cloudinary.uploader.upload(file.path, {
@@ -147,10 +159,10 @@ export const addCollege = async (req, res) => {
 //           public_id: uploadResponse.public_id,
 //         };
 //       });
-  
-  
+
+
 //       const uploadedImages = await Promise.all(imagePromises);
-  
+
 //      // Ensure fees are numbers in each course
 //      const updatedUgCourses =  Array.isArray(parsedUgCourses) ? parsedUgCourses.map(course => ({
 //       ...course,
@@ -161,7 +173,7 @@ export const addCollege = async (req, res) => {
 //   ...course,
 //   fees: typeof course.fees === 'string' ? parseFloat(course.fees) : course.fees,
 // })) : []; // Return an empty array if ugCourses is not an array
-  
+
 //       // Create a new College instance
 //       const newCollege = new College({
 //         name,
@@ -180,12 +192,12 @@ export const addCollege = async (req, res) => {
 //         // Store image URLs and public IDs in the database
 //       });
 //       // images: uploadedImages,
-  
+
 //       console.log('New College:', newCollege);
-  
+
 //       // Save the college to the database
 //       await newCollege.save();
-  
+
 //       res.status(201).json({ message: 'College added successfully', college: newCollege });
 //     } catch (error) {
 //       console.error('Error adding college:', error);
@@ -223,8 +235,8 @@ export const getCollegesByCountryAndCategory = async (req, res) => {
 
 export const updateCollege = async (req, res) => {
   const { id } = req.params;
-  console.log("body",req.body);
-  
+  console.log("body", req.body);
+
   let {
     name,
     address,
@@ -285,20 +297,20 @@ export const updateCollege = async (req, res) => {
     if (details) college.details = details;
 
     // Update courses if provided
-  // Update UG and PG courses separately
-if (Array.isArray(ugCourses)) {
-  college.ugCourses = ugCourses.map(course => ({
-    course: course.course,
-    fees: course.fees,
-  }));
-}
+    // Update UG and PG courses separately
+    if (Array.isArray(ugCourses)) {
+      college.ugCourses = ugCourses.map(course => ({
+        course: course.course,
+        fees: course.fees,
+      }));
+    }
 
-if (Array.isArray(pgCourses)) {
-  college.pgCourses = pgCourses.map(course => ({
-    course: course.course,
-    fees: course.fees,
-  }));
-}
+    if (Array.isArray(pgCourses)) {
+      college.pgCourses = pgCourses.map(course => ({
+        course: course.course,
+        fees: course.fees,
+      }));
+    }
     // console.log("Type of removedImages:", typeof removedImages);
 
     if (removedImages) {
@@ -313,68 +325,68 @@ if (Array.isArray(pgCourses)) {
           removedImages = []; // Fallback to an empty array
         }
       }
-     // Remove images from Cloudinary if any are marked for removal
-     if (Array.isArray(removedImages) && removedImages.length > 0) {
-      // Filter out any undefined values from removedImages array
-      console.log("removed",removedImages);
+      // Remove images from Cloudinary if any are marked for removal
+      if (Array.isArray(removedImages) && removedImages.length > 0) {
+        // Filter out any undefined values from removedImages array
+        console.log("removed", removedImages);
 
-      
+
         //  const validImages = removedImages.filter(imageUrl => imageUrl !== undefined);
         // Filter out any null or invalid values from removedImages
-  const validRemovedImages = removedImages.filter(imageUrl => imageUrl && typeof imageUrl === "string");
-  console.log("Valid URLs after filtering:", validRemovedImages); // Log valid URLs
+        const validRemovedImages = removedImages.filter(imageUrl => imageUrl && typeof imageUrl === "string");
+        console.log("Valid URLs after filtering:", validRemovedImages); // Log valid URLs
 
-      for (const imageUrl of validRemovedImages) {
-        if (typeof imageUrl === "string") {
-        console.log("Processing image URL:", imageUrl);
-       
-        
-          // Use a regular expression to extract the public_id from the URL
-          const regex =/\/upload\/v\d+\/(.*?)\./;
-          const matches = imageUrl.match(regex);
-          
-          if (matches && matches[1]) {
-            const public_id = matches[1];
-    
-            console.log("public id",public_id);
-            
-        try {
-          await cloudinary.uploader.destroy(public_id);
-          // Remove the image from the database
-          college.images = college.images.filter(image => image.public_id !== public_id);
-        } catch (error) {
-          console.error('Error removing image from Cloudinary:', error);
+        for (const imageUrl of validRemovedImages) {
+          if (typeof imageUrl === "string") {
+            console.log("Processing image URL:", imageUrl);
+
+
+            // Use a regular expression to extract the public_id from the URL
+            const regex = /\/upload\/v\d+\/(.*?)\./;
+            const matches = imageUrl.match(regex);
+
+            if (matches && matches[1]) {
+              const public_id = matches[1];
+
+              console.log("public id", public_id);
+
+              try {
+                await cloudinary.uploader.destroy(public_id);
+                // Remove the image from the database
+                college.images = college.images.filter(image => image.public_id !== public_id);
+              } catch (error) {
+                console.error('Error removing image from Cloudinary:', error);
+              }
+            } else {
+              console.log("Invalid URL format:", imageUrl);
+            }
+          } else {
+            console.log("Skipping invalid entry:", imageUrl);
+          }
         }
-      }else {
-        console.log("Invalid URL format:", imageUrl);
       }
-    } else {
-      console.log("Skipping invalid entry:", imageUrl);
-    }
+
+
+      // Upload new images to Cloudinary if provided
+      if (req.files && req.files.length > 0) {
+        const imageUploads = req.files.map(async (file) => {
+          const result = await cloudinary.uploader.upload(file.path, { folder: 'colleges' });
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+          };
+        });
+
+        const uploadedImages = await Promise.all(imageUploads);
+        college.images.push(...uploadedImages);
       }
-       }
-  
 
-    // Upload new images to Cloudinary if provided
-    if (req.files && req.files.length > 0) {
-      const imageUploads = req.files.map(async (file) => {
-        const result = await cloudinary.uploader.upload(file.path, { folder: 'colleges' });
-        return {
-          url: result.secure_url,
-          public_id: result.public_id,
-        };
-      });
+      // Save the updated college to the database
+      await college.save();
 
-      const uploadedImages = await Promise.all(imageUploads);
-      college.images.push(...uploadedImages);
+      res.status(200).json({ message: 'College updated successfully', college });
     }
-
-    // Save the updated college to the database
-    await college.save();
-
-    res.status(200).json({ message: 'College updated successfully', college });
-  }
- } catch (error) {
+  } catch (error) {
     console.error('Error updating college:', error);
     res.status(500).json({ error: error.message });
   }
@@ -397,36 +409,36 @@ export const getCollegeById = async (req, res) => {
   }
 };
 
-  
-  
- export  const deleteCollege= async (req, res) => {
-    try {
-      const collegeId = req.params.id;
-      const deletedCollege = await College.findByIdAndDelete(collegeId);
-  
-      if (!deletedCollege) {
-        return res.status(404).json({ message: 'College not found' });
-      }
-  
-      res.status(200).json({ message: 'College deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error });
-    }
-  }
 
-  export const editCollege= async (req, res) => {
-    try {
-      const collegeId = req.params.id;
-      const updatedData = req.body;
-  
-      const updatedCollege = await College.findByIdAndUpdate(collegeId, updatedData, { new: true });
-  
-      if (!updatedCollege) {
-        return res.status(404).json({ message: 'College not found' });
-      }
-  
-      res.status(200).json(updatedCollege);
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error });
+
+export const deleteCollege = async (req, res) => {
+  try {
+    const collegeId = req.params.id;
+    const deletedCollege = await College.findByIdAndDelete(collegeId);
+
+    if (!deletedCollege) {
+      return res.status(404).json({ message: 'College not found' });
     }
+
+    res.status(200).json({ message: 'College deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error });
   }
+}
+
+export const editCollege = async (req, res) => {
+  try {
+    const collegeId = req.params.id;
+    const updatedData = req.body;
+
+    const updatedCollege = await College.findByIdAndUpdate(collegeId, updatedData, { new: true });
+
+    if (!updatedCollege) {
+      return res.status(404).json({ message: 'College not found' });
+    }
+
+    res.status(200).json(updatedCollege);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error });
+  }
+}
