@@ -23,18 +23,29 @@ export const addCollege = async (req, res) => {
     } = req.body;
 
     console.log("images",req.files);
-     // Parse and validate courses
-      // Parse and validate courses
-      const ugCourses = Array.isArray(req.body.ugCourses)
-      ? req.body.ugCourses
-      : JSON.parse(req.body.ugCourses || '[]');
-    const pgCourses = Array.isArray(req.body.pgCourses)
-      ? req.body.pgCourses
-      : JSON.parse(req.body.pgCourses || '[]');
+  
+       // Parse and validate courses
+       let ugCourses = req.body.ugCourses;
+       let pgCourses = req.body.pgCourses;
+   
+       // If courses are passed as JSON strings, parse them
+       if (typeof ugCourses === 'string') {
+         ugCourses = JSON.parse(ugCourses);
+       }
+       if (typeof pgCourses === 'string') {
+         pgCourses = JSON.parse(pgCourses);
+       }
 
-      if (!Array.isArray(ugCourses) || !Array.isArray(pgCourses)) {
-        return res.status(400).json({ message: 'Invalid course data format' });
-      }
+           // Validate course data format
+    const validateCourses = (courses) => {
+      return Array.isArray(courses) && courses.every(course =>
+        typeof course.course === 'string' && !isNaN(course.fees)
+      );
+    };
+
+    if (!validateCourses(ugCourses) || !validateCourses(pgCourses)) {
+      return res.status(400).json({ message: 'Invalid course data format' });
+    }
 
      
 
@@ -70,11 +81,11 @@ export const addCollege = async (req, res) => {
       city,
       country,
       category,
-      ugCourses: ugCourses.map((course) => ({
+      ugCourses: ugCourses.map(course => ({
         course: course.course,
         fees: parseFloat(course.fees),
       })),
-      pgCourses: pgCourses.map((course) => ({
+      pgCourses: pgCourses.map(course => ({
         course: course.course,
         fees: parseFloat(course.fees),
       })),
