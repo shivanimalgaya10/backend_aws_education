@@ -5,7 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config(); // Load environment variables
 
 export const addCollege = async (req, res) => {
-  console.log('Request Body:', req.body);
+  console.log('Request Body: shivani ', req.body);
+
+  // Parse and validate courses
+  const ugCourses = req.body.ugCourses ? JSON.parse(req.body.ugCourses) : [];
+  const pgCourses = req.body.pgCourses ? JSON.parse(req.body.pgCourses) : [];
   try {
     const {
       name,
@@ -24,16 +28,7 @@ export const addCollege = async (req, res) => {
 
     console.log("images",req.files);
 
-     // Parse courses
-     let parsedUgCourses = [];
-     let parsedPgCourses = [];
-     try {
-       parsedUgCourses = JSON.parse(ugCourses || '[]');
-       parsedPgCourses = JSON.parse(pgCourses || '[]');
-     } catch (error) {
-       console.error('Error parsing courses:', error);
-       return res.status(400).json({ error: 'Invalid course data' });
-     }
+     
 
     // Check if images are provided
     if (!req.files || req.files.length === 0) {
@@ -50,22 +45,13 @@ export const addCollege = async (req, res) => {
         public_id: uploadResponse.public_id,
       };
     });
+    if (!Array.isArray(ugCourses) || !Array.isArray(pgCourses)) {
+      return res.status(400).json({ message: 'Invalid course data format' });
+    }
 
 
     const uploadedImages = await Promise.all(imagePromises);
- // Validate courses
- const updatedUgCourses = Array.isArray(parsedUgCourses)
- ? parsedUgCourses.map((course) => ({
-     ...course,
-     fees: parseFloat(course.fees || 0),
-   }))
- : [];
-const updatedPgCourses = Array.isArray(parsedPgCourses)
- ? parsedPgCourses.map((course) => ({
-     ...course,
-     fees: parseFloat(course.fees || 0),
-   }))
- : [];
+ 
 
     // Create a new College instance
     const newCollege = new College({
@@ -78,8 +64,14 @@ const updatedPgCourses = Array.isArray(parsedPgCourses)
       city,
       country,
       category,
-       ugCourses: updatedUgCourses,  // Assign UG courses separately
-     pgCourses: updatedPgCourses,  // Assign PG courses separately
+      ugCourses: ugCourses.map((course) => ({
+        course: course.course,
+        fees: parseFloat(course.fees),
+      })),
+      pgCourses: pgCourses.map((course) => ({
+        course: course.course,
+        fees: parseFloat(course.fees),
+      })),
       details,
       images: uploadedImages, // Store image URLs and public IDs in the database
       // Store image URLs and public IDs in the database

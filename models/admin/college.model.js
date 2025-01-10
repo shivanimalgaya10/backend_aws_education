@@ -5,7 +5,7 @@ const categoryOptions = ['India', 'Abroad', 'Coaching'];
 
 const courseSchema = new mongoose.Schema({
   course: { type: String, required: true },
-  fees: { type: Number, required: true, min: 0 },
+  fees: { type: Number, required: true},
 }, { _id: false });
 
 const collegeSchema = new mongoose.Schema({
