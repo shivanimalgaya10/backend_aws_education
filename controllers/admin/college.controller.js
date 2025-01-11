@@ -203,34 +203,75 @@ console.log("pgCourses after parsing:", pgCourses);
 //     }
 //   };
 
-
-// Controller function to get colleges by country and category
 export const getCollegesByCountryAndCategory = async (req, res) => {
   try {
-    const { country, category,name} = req.query;
+    const { country, category, name, course } = req.query;
 
-    let filter = {}; // Initialize an empty filter
+    // Initialize the filter object
+    let filter = {};
 
-    // Add filters if country or category is provided
-    if (country) filter.country = country;
-    if (category) filter.category = category;
-    if(name) filter.name={$regex:name,$options:'i'} // Perform a case-insensitive search for name
+    // Add case-insensitive filters
+    if (country) filter.country = { $regex: country, $options: 'i' };
+    if (category) filter.category = { $regex: category, $options: 'i' };
+    if (name) filter.name = { $regex: name, $options: 'i' };
+
+    // Add course filter for ugCourses and pgCourses
+    if (course) {
+      filter.$or = [
+        { ugCourses: { $elemMatch: { course: { $regex: course, $options: 'i' } } } },
+        { pgCourses: { $elemMatch: { course: { $regex: course, $options: 'i' } } } },
+      ];
+    }
 
     // Fetch colleges based on the filters
     const colleges = await College.find(filter);
 
     // Check if colleges exist
     if (!colleges || colleges.length === 0) {
-      return res.status(404).json({ message: "No colleges found for the specified filters" });
+      return res
+        .status(404)
+        .json({ message: "No colleges found for the specified filters" });
     }
 
     // Respond with the filtered colleges
-    res.status(200).json({ message: "Colleges retrieved successfully", colleges });
+    res
+      .status(200)
+      .json({ message: "Colleges retrieved successfully", colleges });
   } catch (error) {
     console.error("Error fetching colleges:", error);
-    res.status(500).json({ error: "An error occurred while fetching colleges" });
+    res.status(500).json({
+      error: "An error occurred while fetching colleges",
+    });
   }
 };
+
+// Controller function to get colleges by country and category
+// export const getCollegesByCountryAndCategory = async (req, res) => {
+//   try {
+//     const { country, category,name} = req.query;
+
+//     let filter = {}; // Initialize an empty filter
+
+//     // Add filters if country or category is provided
+//     if (country) filter.country = country;
+//     if (category) filter.category = category;
+//     if(name) filter.name={$regex:name,$options:'i'} // Perform a case-insensitive search for name
+
+//     // Fetch colleges based on the filters
+//     const colleges = await College.find(filter);
+
+//     // Check if colleges exist
+//     if (!colleges || colleges.length === 0) {
+//       return res.status(404).json({ message: "No colleges found for the specified filters" });
+//     }
+
+//     // Respond with the filtered colleges
+//     res.status(200).json({ message: "Colleges retrieved successfully", colleges });
+//   } catch (error) {
+//     console.error("Error fetching colleges:", error);
+//     res.status(500).json({ error: "An error occurred while fetching colleges" });
+//   }
+// };
 
 export const updateCollege = async (req, res) => {
   const { id } = req.params;
