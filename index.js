@@ -64,10 +64,34 @@ app.post("/send-email", async (req, res) => {
       });
   
       // Email content
-      const mailOptions = {
+      const adminMailOptions   = {
         from: email,
-        to: "shivanimalgaya10@gmail.com", // Send confirmation to the applicant
-        subject: `Application Received for ${collegeName}`,
+        to: "surajverma7049214132@gmail.com", // Send confirmation to the applicant
+        subject: `New Application Received fo ${collegeName}`,
+        html: `
+          <h1>New Application</h1>
+          <p>Dear Admin,</p>
+          <p>A new application has been submitted for <strong>${collegeName}</strong>.</p>
+          <p><strong>Application Details:</strong></p>
+          <ul>
+            <li><strong>Full Name:</strong> ${fullName}</li>
+            <li><strong>Phone Number:</strong> ${phoneNumber}</li>
+            <li><strong>Email:</strong> ${email}</li>
+            <li><strong>Date of Birth:</strong> ${dob}</li>
+            <li><strong>City:</strong> ${city}</li>
+            <li><strong>Course Type:</strong> ${courseType}</li>
+            <li><strong>Course:</strong> ${course}</li>
+          </ul>
+          <p>Please review the application and contact the applicant for the next steps.</p>
+          <p>Regards,</p>
+          <p>${collegeName} Admissions Team</p>
+        `,
+      };
+      // Email content for student (confirmation)
+      const studentMailOptions = {
+        from: process.env.EMAIL_USER, // From your email (admin email)
+        to: email, // Send confirmation to the applicant
+        subject: `Application Confirmation for ${collegeName}`,
         html: `
           <h1>Application Confirmation</h1>
           <p>Dear ${fullName},</p>
@@ -81,17 +105,21 @@ app.post("/send-email", async (req, res) => {
             <li><strong>Course Type:</strong> ${courseType}</li>
             <li><strong>Course:</strong> ${course}</li>
           </ul>
-          <p>We will contact you soon for the next steps.</p>
+          <p>We have received your application and will contact you soon for the next steps.</p>
           <p>Regards,</p>
           <p>${collegeName} Admissions Team</p>
         `,
       };
   
-      // Send the email
-      const info = await transporter.sendMail(mailOptions);
-  
-      console.log("Email sent: " + info.response);
-      res.status(200).json({ message: "Email sent successfully!" });
+      // Send the admin email
+      const adminInfo = await transporter.sendMail(adminMailOptions);
+      console.log("Admin Email sent: " + adminInfo.response);
+
+      // Send the student confirmation email
+      const studentInfo = await transporter.sendMail(studentMailOptions);
+      console.log("Student Confirmation Email sent: " + studentInfo.response);
+
+      res.status(200).json({ message: "Emails sent successfully!" });
     } catch (error) {
       console.error("Error sending email: ", error);
       res.status(500).json({ message: "Error sending email" });
