@@ -207,13 +207,14 @@ console.log("pgCourses after parsing:", pgCourses);
 // Controller function to get colleges by country and category
 export const getCollegesByCountryAndCategory = async (req, res) => {
   try {
-    const { country, category } = req.query;
+    const { country, category,name} = req.query;
 
     let filter = {}; // Initialize an empty filter
 
     // Add filters if country or category is provided
     if (country) filter.country = country;
     if (category) filter.category = category;
+    if(name) filter.name={$regex:name,$options:'i'} // Perform a case-insensitive search for name
 
     // Fetch colleges based on the filters
     const colleges = await College.find(filter);
