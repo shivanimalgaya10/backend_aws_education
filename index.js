@@ -27,14 +27,8 @@ const corsOptions={
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'], // Specify allowed headers
 
 }
-app.options('*', cors(corsOptions));
+
 app.use(cors(corsOptions))
-app.get("/",(_,res)=>{
-  return res.status(200).json({
-      message:'I am coming  from backend',
-      success:true
-  })
-})
 
 //yha pr apni api aayengi
 app.use("/api/v1/user",userRoute)
@@ -45,6 +39,12 @@ app.use('/api/v1/getcollege', getCollegeRoute)
 app.use('/api/v1/admin/college', collegeRoute);
 //app.use('/api/v1/payment',paymentRoute)
 
+app.get("/",(_,res)=>{
+  return res.status(200).json({
+      message:'I am coming  from backend',
+      success:true
+  })
+})
 app.post("/send-email", async (req, res) => {
     const { fullName, phoneNumber, email, dob, city, courseType, course, collegeName } = req.body;
   
