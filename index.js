@@ -7,6 +7,7 @@ import connectDB from "./utils/db.js"
 import postRoute from './routes/post.route.js'
 import messageRoute from './routes/message.route.js'
 import collegeRoute from './routes/admin/college.route.js';
+import paymentRoute from './routes/payment/payment.route.js'
 import getCollegeRoute from './routes/user/getcollege.route.js'
 import { College } from "./models/admin/college.model.js"
 import nodemailer from 'nodemailer'
@@ -45,6 +46,7 @@ app.use('/api/v1/message',messageRoute)
 app.use('/api/v1/getcollege', getCollegeRoute)
 
 app.use('/api/v1/admin/college', collegeRoute);
+app.use('/api/v1/payment',paymentRoute)
 
 app.post("/send-email", async (req, res) => {
     const { fullName, phoneNumber, email, dob, city, courseType, course, collegeName } = req.body;
