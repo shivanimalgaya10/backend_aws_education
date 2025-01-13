@@ -1,7 +1,5 @@
-import axios from 'axios'
-import crypto from 'crypto'
-import { request } from 'http';
-import { type } from 'os';
+import axios from 'axios';
+import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
 const MERCHANT_KEY="618fa17f-c54c-4aff-9f5b-8e10b3e835f2";
