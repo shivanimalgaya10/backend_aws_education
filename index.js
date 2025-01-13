@@ -43,7 +43,7 @@ app.use('/api/v1/message',messageRoute)
 app.use('/api/v1/getcollege', getCollegeRoute)
 
 app.use('/api/v1/admin/college', collegeRoute);
-app.use('/api/v1/payment',paymentRoute)
+//app.use('/api/v1/payment',paymentRoute)
 
 app.post("/send-email", async (req, res) => {
     const { fullName, phoneNumber, email, dob, city, courseType, course, collegeName } = req.body;
