@@ -12,13 +12,9 @@ import getCollegeRoute from './routes/user/getcollege.route.js'
 import { College } from "./models/admin/college.model.js"
 import nodemailer from 'nodemailer'
 
-
-
 dotenv.config({})
 const app =express();
 const PORT=process.env.PORT || 8000
-
-
 
 //middlewares
 app.use(express.json())
@@ -31,6 +27,7 @@ const corsOptions={
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'], // Specify allowed headers
 
 }
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions))
 app.get("/",(_,res)=>{
   return res.status(200).json({
