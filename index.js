@@ -177,6 +177,8 @@ app.post('/create-order', async (req, res) => {
 
   try {
     const response = await axios.request(option);
+    console.log("response",response.data);
+    
     console.log(response.data.data.instrumentResponse.redirectInfo.url);
     res.status(200).json({ msg: "OK", url: response.data.data.instrumentResponse.redirectInfo.url });
   } catch (error) {
