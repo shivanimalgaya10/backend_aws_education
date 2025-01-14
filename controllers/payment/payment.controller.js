@@ -12,6 +12,8 @@ const failureUrl = "https://education.blackgrapesgroup.com/payment-failure";
 
 export const  createOrder=async(req,res)=>{
       const{name,mobileNumber,amount}=req.body
+      console.log("body",req.body);
+      
       const orderId=uuidv4();
 
       const paymentPayload={
@@ -26,6 +28,8 @@ export const  createOrder=async(req,res)=>{
             type:'PAY_PAGE'
         }
       }
+      console.log("paymentPayload",paymentPayload);
+      
 
       const payload=Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
       const keyIndex=1;
