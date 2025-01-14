@@ -27,7 +27,7 @@ export const  createOrder=async(req,res)=>{
         }
       }
 
-      const payload=Buffer.from(JSON.stringify(paymentPayload).toString('base64'));
+      const payload=Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
       const keyIndex=1;
       const string=payload + 'pg/v1/pay'+MERCHANT_KEY;
       const sha256=crypto.createHash('sha256').update(string).digest('hex');
