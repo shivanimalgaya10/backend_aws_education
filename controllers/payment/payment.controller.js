@@ -1,6 +1,8 @@
-import axios from 'axios';
+
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
+
 
 const MERCHANT_KEY="618fa17f-c54c-4aff-9f5b-8e10b3e835f2";
 const MERCHANT_ID="M22SBE31INURY";
@@ -11,86 +13,79 @@ const successUrl = "https://education.blackgrapesgroup.com/payment-success";
 const failureUrl = "https://education.blackgrapesgroup.com/payment-failure";
 
 export const  createOrder=async(req,res)=>{
-      const{name,mobileNumber,amount}=req.body
-      console.log("body",req.body);
-      
-      const orderId=uuidv4();
+  const { name, mobileNumber, amount } = req.body;
+  const orderId = uuidv4();
 
-      const paymentPayload={
-        merchantId:MERCHANT_ID,
-        merchantUserId:name,
-        mobileNumber:mobileNumber,
-        amount:amount*100,
-        merchantTransactionId:orderId,
-        redirectUrl:`${redirectUrl}/?id=${orderId}`,
-        redirectMode:'POST',
-        paymentInstrument:{
-            type:'PAY_PAGE'
-        }
-      }
-      console.log("paymentPayload",paymentPayload);
-      
+  // Payment Payload
+  const paymentPayload = {
+    merchantId: MERCHANT_ID,
+    merchantUserId: name,
+    mobileNumber: mobileNumber,
+    amount: amount * 100,
+    merchantTransactionId: orderId,
+    redirectUrl: `${redirectUrl}/?id=${orderId}`,
+    redirectMode: 'POST',
+    paymentInstrument: {
+      type: 'PAY_PAGE'
+    }
+  };
 
-      const payload=Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
-      const keyIndex=1;
-      const string=payload + 'pg/v1/pay'+MERCHANT_KEY;
-      const sha256=crypto.createHash('sha256').update(string).digest('hex');
-      const checksum=sha256 + '###' +keyIndex;
+  const payload = Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
+  const keyIndex = 1;
+  const string = payload + '/pg/v1/pay' + MERCHANT_KEY;
+  const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+  const checksum = sha256 + '###' + keyIndex;
 
-      const option ={
-        method:'POST',
-        url:prod_URL,
-        headers:{
-            accept:'application/json',
-            "Content-Type":"application/json",
-            "X-VERIFY":checksum
-        },
-        data:{
-            request:payload
-        }
-      }
+  const option = {
+    method: 'POST',
+    url: prod_URL,
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-VERIFY': checksum
+    },
+    data: {
+      request: payload
+    }
+  };
 
-      try {
-        const response=await axios.request(option);
-        console.log(response.data.data.instrumentResponse.redirectInfo.url);
-        res.status(200).json({msg:"OK",url:response.data.data.instrumentResponse.redirectInfo.url});
-        
-      } catch (error) {
-        console.log("Error in payment", error);
-        res.status(500).json({ error: 'Failed to initiate payment' });
-      }
+  try {
+    const response = await axios.request(option);
+    console.log(response.data.data.instrumentResponse.redirectInfo.url);
+    res.status(200).json({ msg: "OK", url: response.data.data.instrumentResponse.redirectInfo.url });
+  } catch (error) {
+    console.log("Error in payment", error);
+    res.status(500).json({ error: 'Failed to initiate payment' });
+  }
+
 }
 
 export const getStatus=async(req,res)=>{
 
-    const merchantTransactionId=req.query.id
+  const merchantTransactionId = req.query.id;
 
-    const keyIndex=1;
-    const string=`pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`+MERCHANT_KEY;
-    const sha256=crypto.createHash('sha256').update(string).digest('hex')
-    const checksum=sha256+"###"+keyIndex;
+  const keyIndex = 1;
+  const string = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + MERCHANT_KEY;
+  const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+  const checksum = sha256 + '###' + keyIndex;
 
-    const option={
-        method:"GET",
-        url:`${prod_status_URL}/${MERCHANT_ID}/${merchantTransactionId}`,
-        headers:{
-            accept:"application/json",
-            "Content-Type":"application/json",
-            "X-VERIFY":checksum,
-            "X-MERCHANT-ID":MERCHANT_ID
-        }
+  const option = {
+    method: 'GET',
+    url: `${prod_status_URL}/${MERCHANT_ID}/${merchantTransactionId}`,
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-VERIFY': checksum,
+      'X-MERCHANT-ID': MERCHANT_ID
+    },
+  };
+
+  axios.request(option).then((response) => {
+    if (response.data.success === true) {
+      return res.redirect(successUrl);
+
+    } else {
+      return res.redirect(failureUrl);
     }
-
-    try {
-        const response=await axios.request(option);
-        if (response.data.success === true) {
-            return res.redirect(successUrl);
-          } else {
-            return res.redirect(failureUrl);
-          }
-        
-    } catch (error) {
-        console.error("errro in status check:",error)
-        res.status(500).json({error: 'Failed to check payment status'})
-    }
+  });
 }
