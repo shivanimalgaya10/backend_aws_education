@@ -37,7 +37,7 @@ app.use('/api/v1/message',messageRoute)
 app.use('/api/v1/getcollege', getCollegeRoute)
 
 app.use('/api/v1/admin/college', collegeRoute);
-//app.use('/api/v1/payment',paymentRoute)
+app.use('/api/v1/payment',paymentRoute)
 
 app.get("/",(_,res)=>{
   return res.status(200).json({
