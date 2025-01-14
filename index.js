@@ -129,7 +129,7 @@ app.post("/send-email", async (req, res) => {
 
 
 
-  const MERCHANT_KEY="618fa17f-c54c-4aff-9f5b-8e10b3e835f2";
+const MERCHANT_KEY="618fa17f-c54c-4aff-9f5b-8e10b3e835f2";
 const MERCHANT_ID="M22SBE31INURY";
 const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 const prod_status_URL = "https://api.phonepe.com/apis/hermes/pg/v1/status";
@@ -206,12 +206,12 @@ app.post('/status', async (req, res) => {
   };
 
   axios.request(option).then((response) => {
-    if (response.data.success === true) {
-      return res.redirect(successUrl);
+    // if (response.data.success === true) {
+    //   return res.redirect(successUrl);
 
-    } else {
-      return res.redirect(failureUrl);
-    }
+    // } else {
+    //   return res.redirect(failureUrl);
+    // }
   });
 });
 
