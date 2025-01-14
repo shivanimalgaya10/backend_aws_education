@@ -3,7 +3,7 @@ import { createOrder, getStatus } from '../../controllers/payment/payment.contro
 
 const router=express.Router()
 
-router.route('/create-router').post(createOrder);
+router.route('/create-order').post(createOrder);
 router.route('/status').post(getStatus)
 
 export default router;
