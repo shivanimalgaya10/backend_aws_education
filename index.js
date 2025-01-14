@@ -7,9 +7,11 @@ import connectDB from "./utils/db.js"
 import postRoute from './routes/post.route.js'
 import messageRoute from './routes/message.route.js'
 import collegeRoute from './routes/admin/college.route.js';
-import paymentRoute from './routes/payment/payment.route.js'
+import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
+
 import getCollegeRoute from './routes/user/getcollege.route.js'
-import { College } from "./models/admin/college.model.js"
 import nodemailer from 'nodemailer'
 
 dotenv.config({})
@@ -37,7 +39,7 @@ app.use('/api/v1/message',messageRoute)
 app.use('/api/v1/getcollege', getCollegeRoute)
 
 app.use('/api/v1/admin/college', collegeRoute);
-app.use('/api/v1/payment',paymentRoute)
+
 
 app.get("/",(_,res)=>{
   return res.status(200).json({
@@ -124,6 +126,94 @@ app.post("/send-email", async (req, res) => {
       res.status(500).json({ message: "Error sending email" });
     }
   });
+
+
+
+  const MERCHANT_KEY="618fa17f-c54c-4aff-9f5b-8e10b3e835f2";
+const MERCHANT_ID="M22SBE31INURY";
+const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+const prod_status_URL = "https://api.phonepe.com/apis/hermes/pg/v1/status";
+const redirectUrl = "https://aws.education.blackgrapesgroup.com/status";
+const successUrl = "https://education.blackgrapesgroup.com/payment-success";
+const failureUrl = "https://education.blackgrapesgroup.com/payment-failure";
+
+  // Create Order Route
+app.post('/create-order', async (req, res) => {
+  const { name, mobileNumber, amount } = req.body;
+  const orderId = uuidv4();
+
+  // Payment Payload
+  const paymentPayload = {
+    merchantId: MERCHANT_ID,
+    merchantUserId: name,
+    mobileNumber: mobileNumber,
+    amount: amount * 100,
+    merchantTransactionId: orderId,
+    redirectUrl: `${redirectUrl}/?id=${orderId}`,
+    redirectMode: 'POST',
+    paymentInstrument: {
+      type: 'PAY_PAGE'
+    }
+  };
+
+  const payload = Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
+  const keyIndex = 1;
+  const string = payload + '/pg/v1/pay' + MERCHANT_KEY;
+  const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+  const checksum = sha256 + '###' + keyIndex;
+
+  const option = {
+    method: 'POST',
+    url: prod_URL,
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-VERIFY': checksum
+    },
+    data: {
+      request: payload
+    }
+  };
+
+  try {
+    const response = await axios.request(option);
+    console.log(response.data.data.instrumentResponse.redirectInfo.url);
+    res.status(200).json({ msg: "OK", url: response.data.data.instrumentResponse.redirectInfo.url });
+  } catch (error) {
+    console.log("Error in payment", error);
+    res.status(500).json({ error: 'Failed to initiate payment' });
+  }
+});
+
+// Payment Status Route
+app.post('/status', async (req, res) => {
+  const merchantTransactionId = req.query.id;
+
+  const keyIndex = 1;
+  const string = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + MERCHANT_KEY;
+  const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+  const checksum = sha256 + '###' + keyIndex;
+
+  const option = {
+    method: 'GET',
+    url: `${prod_status_URL}/${MERCHANT_ID}/${merchantTransactionId}`,
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-VERIFY': checksum,
+      'X-MERCHANT-ID': MERCHANT_ID
+    },
+  };
+
+  axios.request(option).then((response) => {
+    if (response.data.success === true) {
+      return res.redirect(successUrl);
+
+    } else {
+      return res.redirect(failureUrl);
+    }
+  });
+});
 
 
 
