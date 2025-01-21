@@ -18,10 +18,7 @@ dotenv.config({})
 const app =express();
 const PORT=process.env.PORT || 8000
 
-//middlewares
-app.use(express.json())
-app.use(cookieParser())
-app.use(urlencoded({extended:true}))
+
 const corsOptions={
     origin: ['https://education.blackgrapesgroup.com','https://admin.blackgrapesgroup.com'], // The frontend origin
     credentials:true,
@@ -32,6 +29,23 @@ const corsOptions={
 
 app.use(cors(corsOptions))
 
+// Set the Content Security Policy (CSP) header
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", 
+    "default-src 'self'; " +  // Allow resources from same origin
+    "connect-src 'self' https://api.phonepe.com; " +  // Allow connections to PhonePe API
+    "script-src 'self'; " +   // Allow scripts from same origin
+    "style-src 'self' 'unsafe-inline'; " + // Allow styles from same origin and inline styles
+    "img-src 'self' data:; " +  // Allow images from same origin and inline images
+    "frame-src 'self'; "  // Allow iframes from the same origin
+  );
+  next();  // Proceed to the next middleware
+});
+//middlewares
+app.use(express.json())
+app.use(cookieParser())
+app.use(urlencoded({extended:true}))
+
 //yha pr apni api aayengi
 app.use("/api/v1/user",userRoute)
 app.use('/api/v1/post',postRoute)
@@ -39,6 +53,9 @@ app.use('/api/v1/message',messageRoute)
 app.use('/api/v1/getcollege', getCollegeRoute)
 
 app.use('/api/v1/admin/college', collegeRoute);
+
+// Handle OPTIONS requests globally for preflight (needed for CORS)
+app.options('*', cors(corsOptions));  // Allow preflight requests for all routes
 
 
 app.get("/",(_,res)=>{
@@ -137,7 +154,7 @@ const redirectUrl = "https://awsedu.blackgrapesgroup.com/status";
 const successUrl = "https://education.blackgrapesgroup.com/payment-success";
 const failureUrl = "https://education.blackgrapesgroup.com/payment-failure";
 
-  // Create Order Route
+// Create Order Route
 app.post('/create-order', async (req, res) => {
   const { name, mobileNumber, amount } = req.body;
   const orderId = uuidv4();
@@ -150,17 +167,21 @@ app.post('/create-order', async (req, res) => {
     amount: amount * 100,
     merchantTransactionId: orderId,
     redirectUrl: `${redirectUrl}/?id=${orderId}`,
-    redirectMode: 'POST',
+    redirectMode:'POST',
     paymentInstrument: {
       type: 'PAY_PAGE'
     }
   };
 
-  const payload = Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
+  console.log("Request payload:", paymentPayload);
+
+  const payload =Buffer.from(JSON.stringify(paymentPayload)).toString('base64');
   const keyIndex = 1;
-  const string = payload + '/pg/v1/pay' + MERCHANT_KEY;
+  const string = payload +'/pg/v1/pay' + MERCHANT_KEY;
   const sha256 = crypto.createHash('sha256').update(string).digest('hex');
   const checksum = sha256 + '###' + keyIndex;
+
+  console.log("Generated Checksum:", checksum);
 
   const option = {
     method: 'POST',
@@ -192,9 +213,9 @@ app.post('/status', async (req, res) => {
   const merchantTransactionId = req.query.id;
 
   const keyIndex = 1;
-  const string = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + MERCHANT_KEY;
+  const string = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`+ MERCHANT_KEY;
   const sha256 = crypto.createHash('sha256').update(string).digest('hex');
-  const checksum = sha256 + '###' + keyIndex;
+  const checksum = sha256+ '###' + keyIndex;
 
   const option = {
     method: 'GET',
@@ -208,18 +229,15 @@ app.post('/status', async (req, res) => {
   };
 
   axios.request(option).then((response) => {
-    // if (response.data.success === true) {
-    //   return res.redirect(successUrl);
+    if (response.data.success === true) {
+      return res.redirect(successUrl);
 
-    // } else {
-    //   return res.redirect(failureUrl);
-    // }
+    } else {
+      return res.redirect(failureUrl);
+    }
   });
-});
-
-
-
+}); 
 app.listen(PORT,()=>{
-    connectDB()
+  connectDB()
   console.log(`server listen at port ${PORT}`);
  })
