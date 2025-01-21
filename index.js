@@ -29,19 +29,6 @@ const corsOptions={
 
 app.use(cors(corsOptions))
 
-// Set the Content Security Policy (CSP) header
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", 
-    "default-src 'self'; " +  // Allow resources from same origin
-    "connect-src 'self' https://api.phonepe.com; " +  // Allow connections to PhonePe API
-    "script-src 'self'; " +   // Allow scripts from same origin
-    "style-src 'self' 'unsafe-inline'; " + // Allow styles from same origin and inline styles
-    "img-src 'self' data:; " +  // Allow images from same origin and inline images
-    "frame-src 'self'; "  // Allow iframes from the same origin
-  );
-  next();  // Proceed to the next middleware
-});
-//middlewares
 app.use(express.json())
 app.use(cookieParser())
 app.use(urlencoded({extended:true}))
