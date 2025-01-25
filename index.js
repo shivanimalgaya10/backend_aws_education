@@ -1,6 +1,7 @@
 import express, { urlencoded } from "express"
 import cors from 'cors'
 import cookieParser from "cookie-parser"
+import multer from 'multer';
 import dotenv from 'dotenv'
 import userRoute from './routes/user.route.js'
 import connectDB from "./utils/db.js"
@@ -8,6 +9,7 @@ import postRoute from './routes/post.route.js'
 import messageRoute from './routes/message.route.js'
 import collegeRoute from './routes/admin/college.route.js';
 import crypto from 'crypto';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios'
 
@@ -28,6 +30,8 @@ const corsOptions={
 }
 
 app.use(cors(corsOptions))
+
+
 
 // Set the Content Security Policy (CSP) header
 app.use((req, res, next) => {
@@ -64,6 +68,71 @@ app.get("/",(_,res)=>{
       success:true
   })
 })
+
+const upload = multer({
+  dest: 'uploadsresume/', // Save files to 'uploads' folder
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
+  fileFilter: (req, file, cb) => {
+    // Check file type
+    if (file.mimetype !== 'application/pdf') {
+      req.fileValidationError = 'Only PDF files are allowed!';
+      return cb(new Error('Only PDF files are allowed!'), false); // Reject the file
+    }
+    cb(null, true); // Allow the file if it passes the validation
+  }
+}).single('resume');  // Handle only one file with the field name 'resume'
+
+
+// Create Nodemailer transporter using your email provider (Gmail in this case)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Set your email
+    pass: process.env.EMAIL_PASS, // Set your email password (use app password if 2FA enabled)
+  },
+});
+
+// Endpoint to send the resume as an attachment
+app.post('/sendResume', upload, async (req, res) => {
+  if (req.fileValidationError) {
+    return res.status(400).json({ message: req.fileValidationError });
+  }
+  const { name, message } = req.body; // Get the name and message from the form
+  const resume = req.file; // Get the resume file uploaded by the user
+
+  if (!name || !resume) {
+    return res.status(400).json({ message: 'Name and resume are required.' });
+  }
+
+  try {
+    // Set up email data
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Sender email
+      to: 'surajverma7049214132@example.com', // Receiver email
+      subject: `Job Application from ${name}`,
+      text: `You have received a new job application. 
+            \nName: ${name} 
+            \nMessage: ${message || 'No message'} 
+            \n\nPlease find the resume attached.`,
+      attachments: [
+        {
+          filename: resume.originalname, // Attach the resume with its original name
+          path: path.join(__dirname, 'uploadsresume', resume.filename), // Path to the uploaded file
+        },
+      ],
+    };
+
+    // Send the email with the attached resume
+    await transporter.sendMail(mailOptions);
+
+    // Respond to the user
+    res.status(200).json({ message: 'Resume sent successfully!' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ message: 'Error sending resume' });
+  }
+});
+
 app.post("/send-email", async (req, res) => {
     const { fullName, phoneNumber, email, dob, city, courseType, course, collegeName } = req.body;
   
