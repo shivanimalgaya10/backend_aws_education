@@ -69,7 +69,7 @@ app.get("/",(_,res)=>{
   })
 })
 
-const upload = multer({
+const uploadshi = multer({
   dest: 'uploadsresume/', // Save files to 'uploads' folder
   limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
   fileFilter: (req, file, cb) => {
@@ -93,7 +93,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Endpoint to send the resume as an attachment
-app.post('/sendResume', upload, async (req, res) => {
+app.post('/sendResume', uploadshi, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).json({ message: req.fileValidationError });
   }
