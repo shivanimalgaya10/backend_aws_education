@@ -1,5 +1,5 @@
 import express from 'express';
-import { addCollege, deleteCollege, getCollegeById, getCollegesByCountryAndCategory, updateCollege } from '../../controllers/admin/college.controller.js';
+import { addCollege, deleteCollege, getCollegeById, getCollegeCount, getCollegesByCountryAndCategory, updateCollege } from '../../controllers/admin/college.controller.js';
 import upload1 from '../../utils/multer1.js';
 import isAuthenticated from '../../middlewares/isAuthenticated.js';
 import adminAuth from '../../middlewares/adminAuth.js';
@@ -15,6 +15,10 @@ router.get("/getCollegesByCountryAndCategory",getCollegesByCountryAndCategory);
 router.route("/deletecollege/:id").delete(deleteCollege);
 // Route to get a specific college by ID
 router.route("/getcollege/:id").get(getCollegeById);
+// Route to get total number of colleges
+router.route('/getCollegeCount').get( getCollegeCount);
+
+
 
 
 export default router;

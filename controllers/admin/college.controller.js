@@ -116,6 +116,17 @@ console.log("pgCourses after parsing:", pgCourses);
     res.status(500).json({ error: error.message });
   }
 };
+export const getCollegeCount = async (req, res) => {
+  try {
+    const count = await College.countDocuments(); // Get total count of colleges
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching college count", error);
+    res.status(500).json({ message: "Error fetching college count" });
+  }
+};
+
+
 
 //   export const addCollege = async (req, res) => {
 //     console.log('Request Body:', req.body);

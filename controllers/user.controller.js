@@ -104,6 +104,17 @@ export const logout=async(_,res)=>{
     }
 }
 
+// Get total number of users
+export const getUserCount = async (req, res) => {
+    try {
+      const count = await User.countDocuments(); // Get total count of users
+      res.status(200).json({ count });
+    } catch (error) {
+      console.error("Error fetching user count", error);
+      res.status(500).json({ message: "Error fetching user count" });
+    }
+  };
+
 export const getProfile=async(req,res)=>{
    try {
     const userId=req.params._id;
