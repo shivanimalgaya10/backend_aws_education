@@ -68,6 +68,8 @@ app.get("/",(_,res)=>{
       success:true
   })
 })
+// Replace __dirname with this
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const uploadshi = multer({
   dest: 'uploadsresume/', // Save files to 'uploads' folder
